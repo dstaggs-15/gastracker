@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gas Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Gas Mileage Tracker</h1>
+
+  <form id="entryForm">
+    <input type="date" id="date" required />
+    <input type="number" id="miles" placeholder="Miles Driven" required />
+    <input type="number" id="gallons" placeholder="Gallons Used" required step="0.01" />
+    <input type="number" id="price" placeholder="Total Price ($)" required step="0.01" />
+    <button type="submit">Add Entry</button>
+  </form>
+
+  <h2>Fuel Log</h2>
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Miles</th>
+        <th>Gallons</th>
+        <th>Price</th>
+        <th>MPG</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Stats</h2>
+  <ul id="stats">
+    <li>Total Miles: <span id="totalMiles">0</span></li>
+    <li>Total Gallons: <span id="totalGallons">0</span></li>
+    <li>Total Cost: $<span id="totalCost">0</span></li>
+    <li>Average MPG: <span id="avgMPG">0</span></li>
+  </ul>
+
+  <h2>MPG Over Time</h2>
+  <canvas id="mpgChart" width="600" height="300"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>
