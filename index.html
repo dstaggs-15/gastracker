@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gas Tracker</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>Gas Mileage Tracker</h1>
-
   <form id="entryForm">
-    <input type="date" id="date" required />
-    <input type="number" id="miles" placeholder="Miles Driven" required />
-    <input type="number" id="gallons" placeholder="Gallons Used" required step="0.01" />
-    <input type="number" id="price" placeholder="Total Price ($)" required step="0.01" />
+    <label for="date">Date of Fill-Up:</label>
+    <input type="date" id="date" required>
+    <br>
+    <label for="miles">Miles Driven Since Last Fill-Up:</label>
+    <input type="number" id="miles" placeholder="e.g. 320" required>
+    <br>
+    <label for="gallons">Gallons Added:</label>
+    <input type="number" step="0.01" id="gallons" placeholder="e.g. 10.5" required>
+    <br>
+    <label for="price">Total Price Paid ($):</label>
+    <input type="number" step="0.01" id="price" placeholder="e.g. 37.80" required>
+    <br>
     <button type="submit">Add Entry</button>
   </form>
 
-  <h2>Fuel Log</h2>
+  <h2>Log Table</h2>
   <table id="logTable">
     <thead>
       <tr>
@@ -27,22 +34,22 @@
         <th>Gallons</th>
         <th>Price</th>
         <th>MPG</th>
-        <th>Delete</th>
+        <th>Remove</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <h2>Stats</h2>
-  <ul id="stats">
-    <li>Total Miles: <span id="totalMiles">0</span></li>
-    <li>Total Gallons: <span id="totalGallons">0</span></li>
-    <li>Total Cost: $<span id="totalCost">0</span></li>
-    <li>Average MPG: <span id="avgMPG">0</span></li>
-  </ul>
+  <h2>Summary Stats</h2>
+  <p>Total Miles Driven: <span id="totalMiles">0</span></p>
+  <p>Total Gallons Used: <span id="totalGallons">0</span></p>
+  <p>Total Fuel Cost: $<span id="totalCost">0</span></p>
+  <p>Average MPG: <span id="avgMPG">0</span></p>
 
   <h2>MPG Over Time</h2>
-  <canvas id="mpgChart" width="600" height="300"></canvas>
+  <canvas id="mpgChart" width="600" height="400"></canvas>
+
+  <p><a href="stats.html">View Detailed Stats & Graphs</a></p>
 
   <script src="script.js"></script>
 </body>
