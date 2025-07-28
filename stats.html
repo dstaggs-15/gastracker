@@ -1,33 +1,33 @@
-<!-- stats.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Gas Tracker - Stats</title>
-  <link rel="stylesheet" href="stats.css">
+  <title>Gas Stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="stats.html" class="active">Stats</a></li>
-    </ul>
+    <div><strong>Gas Mileage Tracker</strong></div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="stats.html">Stats</a>
+    </div>
   </nav>
 
-  <main>
-    <h1>Fuel Statistics</h1>
-    <section class="summary">
-      <p><strong>Total Miles Driven:</strong> <span id="totalMiles"></span></p>
-      <p><strong>Total Gallons Used:</strong> <span id="totalGallons"></span></p>
-      <p><strong>Total Cost:</strong> $<span id="totalCost"></span></p>
-      <p><strong>Average MPG:</strong> <span id="avgMPG"></span></p>
-    </section>
+  <div class="container">
+    <h1>Fuel Stats & Graphs</h1>
 
-    <section class="charts">
-      <canvas id="mpgChart"></canvas>
-    </section>
-  </main>
+    <div class="stats-summary">
+      <p><strong>Total Miles:</strong> <span id="total-miles">0</span></p>
+      <p><strong>Total Gallons:</strong> <span id="total-gallons">0</span></p>
+      <p><strong>Total Cost:</strong> <span id="total-cost">0</span></p>
+      <p><strong>Average MPG:</strong> <span id="avg-mpg">0</span></p>
+    </div>
+
+    <canvas id="mpgChart" width="400" height="200"></canvas>
+  </div>
 
   <script src="stats.js"></script>
 </body>
