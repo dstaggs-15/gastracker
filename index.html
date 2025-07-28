@@ -2,59 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fuel Tracker</title>
+  <title>Gas Mileage Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Gas Mileage Tracker</h1>
+  <h1>Gas Mileage Tracker</h1>
 
-    <div class="vehicle-section">
-      <label for="vehicleSelect"><strong>Select Vehicle:</strong></label>
-      <select id="vehicleSelect"></select>
-      <button onclick="addNewVehicle()">+ Add Vehicle</button>
-    </div>
+  <label for="vehicleSelect">Select Vehicle:</label>
+  <select id="vehicleSelect"></select>
+  <button onclick="addVehicle()">+ Add Vehicle</button>
 
-    <form id="fuelForm">
-      <label for="date">Date</label>
-      <input type="date" id="date" required>
+  <form id="fuelForm">
+    <label for="date">Date:</label>
+    <input type="date" id="date" required>
 
-      <label for="odometer">Odometer (mi)</label>
-      <input type="number" id="odometer" required>
+    <label for="odometer">Odometer Reading:</label>
+    <input type="number" id="odometer" required>
 
-      <label for="gallons">Gallons</label>
-      <input type="number" step="0.01" id="gallons" required>
+    <label for="gallons">Gallons:</label>
+    <input type="number" id="gallons" step="0.01" required>
 
-      <label for="price">Price ($)</label>
-      <input type="number" step="0.01" id="price" required>
+    <label for="price">Total Price ($):</label>
+    <input type="number" id="price" step="0.01" required>
 
-      <button type="submit">Add Entry</button>
-    </form>
+    <button type="submit">Log Entry</button>
+  </form>
 
-    <h2>Fuel Log</h2>
-    <table id="logTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Odometer</th>
-          <th>Gallons</th>
-          <th>Price</th>
-          <th>MPG</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="stats">
-      <h2>Stats</h2>
-      <p id="totalMiles">Total Miles: 0</p>
-      <p id="totalGallons">Total Gallons: 0</p>
-      <p id="totalCost">Total Cost: $0</p>
-      <p id="averageMPG">Average MPG: 0</p>
-    </div>
-
-    <a href="stats.html" class="nav-link">View Stats Page</a>
-  </div>
+  <h2>Fuel Log</h2>
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Odometer</th>
+        <th>Gallons</th>
+        <th>Price</th>
+        <th>MPG</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script src="script.js"></script>
 </body>
