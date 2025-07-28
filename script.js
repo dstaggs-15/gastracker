@@ -1,74 +1,108 @@
-// Parse data from localStorage
-let data = JSON.parse(localStorage.getItem("fuelData")) || [];
+let selectedVehicle = localStorage.getItem("selectedVehicle") || "Default Car";
+let fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
 
-function calculateStatsAndGraph() {
-  if (data.length < 2) {
-    document.getElementById("totalMiles").textContent = "Not enough data";
-    document.getElementById("totalGallons").textContent = "-";
-    document.getElementById("totalCost").textContent = "-";
-    document.getElementById("avgMPG").textContent = "-";
-    return;
-  }
+function saveData(date, odometer, gallons, price) {
+  const entry = {
+    date,
+    odometer: parseFloat(odometer),
+    gallons: parseFloat(gallons),
+    price: parseFloat(price)
+  };
 
-  let totalMiles = 0;
-  let totalGallons = 0;
-  let totalCost = 0;
-  let mpgPoints = [];
-  let dates = [];
-
-  for (let i = 1; i < data.length; i++) {
-    let miles = data[i].odometer - data[i - 1].odometer;
-    let gallons = parseFloat(data[i].gallons);
-    let cost = parseFloat(data[i].price);
-
-    if (miles > 0 && gallons > 0) {
-      let mpg = miles / gallons;
-      mpgPoints.push(mpg.toFixed(2));
-      dates.push(data[i].date);
-      totalMiles += miles;
-      totalGallons += gallons;
-      totalCost += cost;
-    }
-  }
-
-  // Update stats
-  document.getElementById("totalMiles").textContent = totalMiles.toFixed(1);
-  document.getElementById("totalGallons").textContent = totalGallons.toFixed(2);
-  document.getElementById("totalCost").textContent = totalCost.toFixed(2);
-  document.getElementById("avgMPG").textContent = (totalMiles / totalGallons).toFixed(2);
-
-  // Draw line chart for MPG
-  const ctx = document.getElementById("mpgChart").getContext("2d");
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: dates,
-      datasets: [{
-        label: "MPG Over Time",
-        data: mpgPoints,
-        borderWidth: 2,
-        fill: false,
-        tension: 0.2
-      }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: false,
-          title: {
-            display: true,
-            text: 'Miles Per Gallon (MPG)'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Date'
-          }
-        }
-      }
-    }
-  });
+  fuelData.push(entry);
+  localStorage.setItem(selectedVehicle, JSON.stringify(fuelData));
+  renderTable();
+  calculateStats();
 }
 
-window.onload = calculateStatsAndGraph;
+function renderTable() {
+  const tbody = document.querySelector("#logTable tbody");
+  tbody.innerHTML = "";
+  fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  for (let i = 1; i < fuelData.length; i++) {
+    const prev = fuelData[i - 1];
+    const current = fuelData[i];
+    const miles = current.odometer - prev.odometer;
+    const mpg = (miles / current.gallons).toFixed(2);
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${current.date}</td>
+      <td>${current.odometer}</td>
+      <td>${current.gallons}</td>
+      <td>${current.price}</td>
+      <td>${mpg}</td>
+    `;
+    tbody.appendChild(row);
+  }
+}
+
+function calculateStats() {
+  let totalMiles = 0, totalGallons = 0, totalCost = 0;
+
+  for (let i = 1; i < fuelData.length; i++) {
+    const miles = fuelData[i].odometer - fuelData[i - 1].odometer;
+    totalMiles += miles;
+    totalGallons += fuelData[i].gallons;
+    totalCost += fuelData[i].price;
+  }
+
+  const avgMPG = totalGallons > 0 ? (totalMiles / totalGallons).toFixed(2) : 0;
+
+  document.getElementById("totalMiles").textContent = `Total Miles: ${totalMiles.toFixed(1)}`;
+  document.getElementById("totalGallons").textContent = `Total Gallons: ${totalGallons.toFixed(2)}`;
+  document.getElementById("totalCost").textContent = `Total Cost: $${totalCost.toFixed(2)}`;
+  document.getElementById("averageMPG").textContent = `Average MPG: ${avgMPG}`;
+}
+
+function populateVehicleDropdown() {
+  const vehicleSelect = document.getElementById("vehicleSelect");
+  const keys = Object.keys(localStorage).filter(k => k !== "selectedVehicle");
+  vehicleSelect.innerHTML = "";
+
+  keys.forEach((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = key;
+    if (key === selectedVehicle) option.selected = true;
+    vehicleSelect.appendChild(option);
+  });
+
+  vehicleSelect.onchange = () => {
+    selectedVehicle = vehicleSelect.value;
+    localStorage.setItem("selectedVehicle", selectedVehicle);
+    fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
+    renderTable();
+    calculateStats();
+  };
+}
+
+function addNewVehicle() {
+  const name = prompt("Enter vehicle name:");
+  if (name && !localStorage.getItem(name)) {
+    localStorage.setItem(name, JSON.stringify([]));
+    selectedVehicle = name;
+    localStorage.setItem("selectedVehicle", selectedVehicle);
+    fuelData = [];
+    populateVehicleDropdown();
+    renderTable();
+    calculateStats();
+  }
+}
+
+document.getElementById("fuelForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const date = document.getElementById("date").value;
+  const odometer = document.getElementById("odometer").value;
+  const gallons = document.getElementById("gallons").value;
+  const price = document.getElementById("price").value;
+  saveData(date, odometer, gallons, price);
+  this.reset();
+});
+
+window.onload = () => {
+  populateVehicleDropdown();
+  renderTable();
+  calculateStats();
+};
