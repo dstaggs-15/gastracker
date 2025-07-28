@@ -1,0 +1,25 @@
+<!-- stats.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gas Stats</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    h1 { font-size: 28px; }
+    canvas { max-width: 700px; }
+  </style>
+</head>
+<body>
+  <h1>Fuel Stats & Graphs</h1>
+  <p><strong>Total Miles Driven:</strong> <span id="totalMiles"></span></p>
+  <p><strong>Total Gallons:</strong> <span id="totalGallons"></span></p>
+  <p><strong>Total Cost:</strong> $<span id="totalCost"></span></p>
+  <p><strong>Average MPG:</strong> <span id="avgMPG"></span></p>
+
+  <canvas id="mpgChart"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>
