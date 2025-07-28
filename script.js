@@ -1,79 +1,47 @@
-const vehicles = JSON.parse(localStorage.getItem("vehicles")) || ["Default Car"];
-const selectedVehicle = localStorage.getItem("selectedVehicle") || vehicles[0];
-document.getElementById("currentCar").textContent = selectedVehicle;
+const form = document.getElementById("fuel-form");
+const tableBody = document.querySelector("#log-table tbody");
 
-const fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
+let entries = JSON.parse(localStorage.getItem("fuelEntries")) || [];
 
-function getMPGData() {
-  const labels = [];
-  const mpgValues = [];
-  let prevOdo = null;
+form.addEventListener("submit", e => {
+  e.preventDefault();
 
-  const sorted = fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const car = document.getElementById("carName").value;
+  const date = document.getElementById("date").value;
+  const odometer = parseFloat(document.getElementById("odometer").value);
+  const gallons = parseFloat(document.getElementById("gallons").value);
+  const price = parseFloat(document.getElementById("price").value);
 
-  sorted.forEach(entry => {
-    if (prevOdo !== null && entry.gallons > 0) {
-      const miles = entry.odometer - prevOdo;
-      const mpg = miles / entry.gallons;
-      labels.push(entry.date);
-      mpgValues.push(+mpg.toFixed(2));
+  let mpg = 0;
+  if (entries.length > 0) {
+    const lastEntry = entries[entries.length - 1];
+    if (lastEntry.car === car) {
+      mpg = (odometer - lastEntry.odometer) / gallons;
     }
-    prevOdo = entry.odometer;
-  });
+  }
 
-  return { labels, mpgValues };
-}
+  const entry = { car, date, odometer, gallons, price, mpg: mpg.toFixed(2) };
+  entries.push(entry);
+  localStorage.setItem("fuelEntries", JSON.stringify(entries));
 
-function renderChart() {
-  const { labels, mpgValues } = getMPGData();
+  form.reset();
+  renderTable();
+});
 
-  new Chart(document.getElementById("mpgChart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "MPG Over Time",
-        data: mpgValues,
-        borderColor: "blue",
-        backgroundColor: "rgba(0, 123, 255, 0.2)",
-        fill: true,
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          title: {
-            display: true,
-            text: "MPG"
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: "Date"
-          }
-        }
-      }
-    }
+function renderTable() {
+  tableBody.innerHTML = "";
+  entries.forEach(e => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${e.car}</td>
+      <td>${e.date}</td>
+      <td>${e.odometer}</td>
+      <td>${e.gallons}</td>
+      <td>$${e.price}</td>
+      <td>${e.mpg || "-"}</td>
+    `;
+    tableBody.appendChild(row);
   });
 }
 
-function renderSummary() {
-  const totalMiles = fuelData.at(-1)?.odometer - fuelData[0]?.odometer || 0;
-  const totalGallons = fuelData.reduce((sum, e) => sum + parseFloat(e.gallons || 0), 0);
-  const totalCost = fuelData.reduce((sum, e) => sum + parseFloat(e.price || 0), 0);
-  const avgMPG = totalGallons > 0 ? totalMiles / totalGallons : 0;
-
-  const list = document.getElementById("summaryList");
-  list.innerHTML = `
-    <li>Total Miles: ${totalMiles.toFixed(1)}</li>
-    <li>Total Gallons: ${totalGallons.toFixed(2)}</li>
-    <li>Total Cost: $${totalCost.toFixed(2)}</li>
-    <li>Average MPG: ${avgMPG.toFixed(2)}</li>
-  `;
-}
-
-renderChart();
-renderSummary();
+renderTable();
