@@ -1,77 +1,79 @@
-let vehicles = JSON.parse(localStorage.getItem("vehicles")) || ["Default Car"];
-let selectedVehicle = localStorage.getItem("selectedVehicle") || vehicles[0];
-let fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
+const vehicles = JSON.parse(localStorage.getItem("vehicles")) || ["Default Car"];
+const selectedVehicle = localStorage.getItem("selectedVehicle") || vehicles[0];
+document.getElementById("currentCar").textContent = selectedVehicle;
 
-function saveData(date, odometer, gallons, price) {
-  fuelData.push({ date, odometer: +odometer, gallons: +gallons, price: +price });
-  fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
-  localStorage.setItem(selectedVehicle, JSON.stringify(fuelData));
-  renderTable();
-}
+const fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
 
-function renderTable() {
-  const tbody = document.querySelector("#logTable tbody");
-  tbody.innerHTML = "";
+function getMPGData() {
+  const labels = [];
+  const mpgValues = [];
   let prevOdo = null;
 
-  fuelData.forEach(entry => {
-    const tr = document.createElement("tr");
-    const mpg = prevOdo !== null ? ((entry.odometer - prevOdo) / entry.gallons).toFixed(2) : "-";
+  const sorted = fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  sorted.forEach(entry => {
+    if (prevOdo !== null && entry.gallons > 0) {
+      const miles = entry.odometer - prevOdo;
+      const mpg = miles / entry.gallons;
+      labels.push(entry.date);
+      mpgValues.push(+mpg.toFixed(2));
+    }
     prevOdo = entry.odometer;
+  });
 
-    tr.innerHTML = `
-      <td>${entry.date}</td>
-      <td>${entry.odometer}</td>
-      <td>${entry.gallons}</td>
-      <td>$${entry.price.toFixed(2)}</td>
-      <td>${mpg}</td>
-    `;
-    tbody.appendChild(tr);
+  return { labels, mpgValues };
+}
+
+function renderChart() {
+  const { labels, mpgValues } = getMPGData();
+
+  new Chart(document.getElementById("mpgChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "MPG Over Time",
+        data: mpgValues,
+        borderColor: "blue",
+        backgroundColor: "rgba(0, 123, 255, 0.2)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          title: {
+            display: true,
+            text: "MPG"
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Date"
+          }
+        }
+      }
+    }
   });
 }
 
-function populateVehicleDropdown() {
-  const select = document.getElementById("vehicleSelect");
-  select.innerHTML = "";
-  vehicles.forEach(v => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    if (v === selectedVehicle) opt.selected = true;
-    select.appendChild(opt);
-  });
+function renderSummary() {
+  const totalMiles = fuelData.at(-1)?.odometer - fuelData[0]?.odometer || 0;
+  const totalGallons = fuelData.reduce((sum, e) => sum + parseFloat(e.gallons || 0), 0);
+  const totalCost = fuelData.reduce((sum, e) => sum + parseFloat(e.price || 0), 0);
+  const avgMPG = totalGallons > 0 ? totalMiles / totalGallons : 0;
+
+  const list = document.getElementById("summaryList");
+  list.innerHTML = `
+    <li>Total Miles: ${totalMiles.toFixed(1)}</li>
+    <li>Total Gallons: ${totalGallons.toFixed(2)}</li>
+    <li>Total Cost: $${totalCost.toFixed(2)}</li>
+    <li>Average MPG: ${avgMPG.toFixed(2)}</li>
+  `;
 }
 
-function addVehicle() {
-  const newVehicle = prompt("Enter new vehicle name:");
-  if (newVehicle && !vehicles.includes(newVehicle)) {
-    vehicles.push(newVehicle);
-    localStorage.setItem("vehicles", JSON.stringify(vehicles));
-    localStorage.setItem("selectedVehicle", newVehicle);
-    selectedVehicle = newVehicle;
-    fuelData = [];
-    localStorage.setItem(selectedVehicle, JSON.stringify([]));
-    populateVehicleDropdown();
-    renderTable();
-  }
-}
-
-document.getElementById("vehicleSelect").addEventListener("change", function () {
-  selectedVehicle = this.value;
-  localStorage.setItem("selectedVehicle", selectedVehicle);
-  fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
-  renderTable();
-});
-
-document.getElementById("fuelForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const date = document.getElementById("date").value;
-  const odometer = document.getElementById("odometer").value;
-  const gallons = document.getElementById("gallons").value;
-  const price = document.getElementById("price").value;
-  saveData(date, odometer, gallons, price);
-  this.reset();
-});
-
-populateVehicleDropdown();
-renderTable();
+renderChart();
+renderSummary();
