@@ -3,23 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fuel Stats</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Gas Stats</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #3171e0;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    nav {
+      background-color: #1e56a0;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      font-weight: bold;
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      background-color: white;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+      border-radius: 10px;
+    }
+
+    canvas {
+      max-width: 100%;
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>Gas Tracker Stats</h1>
+  </header>
+
   <nav>
-    <ul>
-      <li><a href="index.html">Fuel Log</a></li>
-      <li><a href="stats.html">Stats</a></li>
-    </ul>
+    <a href="index.html">Home</a>
+    <a href="stats.html">Stats</a>
   </nav>
 
   <main>
-    <h1>Stats</h1>
+    <h2>MPG Over Time</h2>
     <canvas id="mpgChart" width="400" height="200"></canvas>
   </main>
 
-  <script src="stats.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const ctx = document.getElementById("mpgChart").getContext("2d");
+      const raw = localStorage.getItem("fuelEntries");
+      if (!raw) {
+        ctx.font = "16px sans-serif";
+        ctx.fillText("No data found.", 10, 50);
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        ctx.font = "16px sans-serif";
+        ctx.fillText("Corrupt data.", 10, 50);
+        return;
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        ctx.font = "16px sans-serif";
+        ctx.fillText("No entries to display.", 10, 50);
+        return;
+      }
+
+      const filtered = data.filter(e => e.mpg && !isNaN(e.mpg));
+      if (filtered.length === 0) {
+        ctx.font = "16px sans-serif";
+        ctx.fillText("No MPG data available.", 10, 50);
+        return;
+      }
+
+      const labels = filtered.map(e => `${e.car || 'Car'} - ${e.date}`);
+      const mpgs = filtered.map(e => parseFloat(e.mpg));
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "MPG",
+            data: mpgs,
+            borderColor: "#3171e0",
+            backgroundColor: "rgba(49,113,224,0.2)",
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "top" },
+            title: {
+              display: true,
+              text: "MPG Over Time"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Miles per Gallon"
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Fill-Up Date"
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>
