@@ -1,95 +1,67 @@
-let selectedVehicle = localStorage.getItem("selectedVehicle") || "Default Car";
+let vehicles = JSON.parse(localStorage.getItem("vehicles")) || ["Default Car"];
+let selectedVehicle = localStorage.getItem("selectedVehicle") || vehicles[0];
 let fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
 
 function saveData(date, odometer, gallons, price) {
-  const entry = {
-    date,
-    odometer: parseFloat(odometer),
-    gallons: parseFloat(gallons),
-    price: parseFloat(price)
-  };
-
-  fuelData.push(entry);
+  fuelData.push({ date, odometer: +odometer, gallons: +gallons, price: +price });
+  fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
   localStorage.setItem(selectedVehicle, JSON.stringify(fuelData));
   renderTable();
-  calculateStats();
 }
 
 function renderTable() {
   const tbody = document.querySelector("#logTable tbody");
   tbody.innerHTML = "";
-  fuelData.sort((a, b) => new Date(a.date) - new Date(b.date));
+  let prevOdo = null;
 
-  for (let i = 1; i < fuelData.length; i++) {
-    const prev = fuelData[i - 1];
-    const current = fuelData[i];
-    const miles = current.odometer - prev.odometer;
-    const mpg = (miles / current.gallons).toFixed(2);
+  fuelData.forEach(entry => {
+    const tr = document.createElement("tr");
+    const mpg = prevOdo !== null ? ((entry.odometer - prevOdo) / entry.gallons).toFixed(2) : "-";
+    prevOdo = entry.odometer;
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${current.date}</td>
-      <td>${current.odometer}</td>
-      <td>${current.gallons}</td>
-      <td>${current.price}</td>
+    tr.innerHTML = `
+      <td>${entry.date}</td>
+      <td>${entry.odometer}</td>
+      <td>${entry.gallons}</td>
+      <td>$${entry.price.toFixed(2)}</td>
       <td>${mpg}</td>
     `;
-    tbody.appendChild(row);
-  }
-}
-
-function calculateStats() {
-  let totalMiles = 0, totalGallons = 0, totalCost = 0;
-
-  for (let i = 1; i < fuelData.length; i++) {
-    const miles = fuelData[i].odometer - fuelData[i - 1].odometer;
-    totalMiles += miles;
-    totalGallons += fuelData[i].gallons;
-    totalCost += fuelData[i].price;
-  }
-
-  const avgMPG = totalGallons > 0 ? (totalMiles / totalGallons).toFixed(2) : 0;
-
-  document.getElementById("totalMiles").textContent = `Total Miles: ${totalMiles.toFixed(1)}`;
-  document.getElementById("totalGallons").textContent = `Total Gallons: ${totalGallons.toFixed(2)}`;
-  document.getElementById("totalCost").textContent = `Total Cost: $${totalCost.toFixed(2)}`;
-  document.getElementById("averageMPG").textContent = `Average MPG: ${avgMPG}`;
+    tbody.appendChild(tr);
+  });
 }
 
 function populateVehicleDropdown() {
-  const vehicleSelect = document.getElementById("vehicleSelect");
-  const keys = Object.keys(localStorage).filter(k => k !== "selectedVehicle");
-  vehicleSelect.innerHTML = "";
-
-  keys.forEach((key) => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = key;
-    if (key === selectedVehicle) option.selected = true;
-    vehicleSelect.appendChild(option);
+  const select = document.getElementById("vehicleSelect");
+  select.innerHTML = "";
+  vehicles.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    if (v === selectedVehicle) opt.selected = true;
+    select.appendChild(opt);
   });
-
-  vehicleSelect.onchange = () => {
-    selectedVehicle = vehicleSelect.value;
-    localStorage.setItem("selectedVehicle", selectedVehicle);
-    fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
-    renderTable();
-    calculateStats();
-  };
 }
 
-function addNewVehicle() {
-  const name = prompt("Enter vehicle name:");
-  if (name && !localStorage.getItem(name)) {
-    localStorage.setItem(name, JSON.stringify([]));
-    selectedVehicle = name;
-    localStorage.setItem("selectedVehicle", selectedVehicle);
+function addVehicle() {
+  const newVehicle = prompt("Enter new vehicle name:");
+  if (newVehicle && !vehicles.includes(newVehicle)) {
+    vehicles.push(newVehicle);
+    localStorage.setItem("vehicles", JSON.stringify(vehicles));
+    localStorage.setItem("selectedVehicle", newVehicle);
+    selectedVehicle = newVehicle;
     fuelData = [];
+    localStorage.setItem(selectedVehicle, JSON.stringify([]));
     populateVehicleDropdown();
     renderTable();
-    calculateStats();
   }
 }
+
+document.getElementById("vehicleSelect").addEventListener("change", function () {
+  selectedVehicle = this.value;
+  localStorage.setItem("selectedVehicle", selectedVehicle);
+  fuelData = JSON.parse(localStorage.getItem(selectedVehicle)) || [];
+  renderTable();
+});
 
 document.getElementById("fuelForm").addEventListener("submit", function (e) {
   e.preventDefault();
@@ -101,8 +73,5 @@ document.getElementById("fuelForm").addEventListener("submit", function (e) {
   this.reset();
 });
 
-window.onload = () => {
-  populateVehicleDropdown();
-  renderTable();
-  calculateStats();
-};
+populateVehicleDropdown();
+renderTable();
